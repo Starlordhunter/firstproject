@@ -21,6 +21,8 @@ from knox.models import AuthToken
 from knox.auth import TokenAuthentication
 from django.db.models import OuterRef, Subquery, Q
 
+from django.shortcuts import redirect
+
 
 class LoginAPI(generics.GenericAPIView):
     permission_classes = [AllowAny]
@@ -50,13 +52,16 @@ class MeView(APIView):
             'user' : serializer.data,            
         })
 
-class ClassInfo(generics.GenericAPIView):
-    class_choice = '1 Anugerah'
+# class ClassInfo(APIView):
+#     class_choice = '1 Anugerah'
     
-    def getClassInfo(request):
+def get_class_info(request):
+    if request.user.is_authenticated:
         class_info = Student.objects.all()
         serializer = StudentSerializer(class_info, many=True)
         return JsonResponse(serializer.data, safe=False)
+    else:
+        return redirect('log-in')
     # outputt = class_choice + " "
     # for obj in class_info:
     #     outputt += obj.student_name + " "
