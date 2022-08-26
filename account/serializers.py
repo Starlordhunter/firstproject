@@ -3,7 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 
 # from core.serializers import StaffSerializer
-from .models import User, Profile
+from .models import School, Student, User, Profile
 
 
 #ProfileSerializer
@@ -29,11 +29,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 #userInfoSerializer
 class GetUserSerializer(serializers.ModelSerializer):
     profile = serializers.SerializerMethodField()
-    class Meta:
-        model = User 
-        fields = ['id', 'email', 'first_name', 'last_name', 
-        'is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions', 'profile']
-
+    
     def get_profile(self ,obj):
         try :
             profile = obj.profile
@@ -41,9 +37,16 @@ class GetUserSerializer(serializers.ModelSerializer):
         except :
             return None
 
+    class Meta:
+        model = User 
+        fields = ['id', 'email', 'first_name', 'last_name', 
+        'is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions', 'profile']
+
+    
+
 class UserSerializer(serializers.ModelSerializer): 
     
-    profile = serializers.SerializerMethodField()
+    # profile = serializers.SerializerMethodField()
     
     class Meta:
         model = User
@@ -62,3 +65,14 @@ class LoginSerializer(serializers.Serializer):
         
         return data 
 
+#SchoolSerializer
+class SchoolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = School
+        fields = ['school_name', 'school_branch','id']
+
+#StudentSerializer
+class StudentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student
+        fields = ['id', 'student_name','student_tel_no','student_address','classes_id','user_id']
