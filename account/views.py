@@ -1,5 +1,8 @@
 from json import JSONDecoder
 import json
+from multiprocessing import context
+from pydoc import classname
+from urllib import request
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -8,11 +11,14 @@ from django.http import JsonResponse
 from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
+from django.http import HttpResponse
+from django.contrib.auth import login
+from account.models import Profile, School, User,Student,Teacher,Classes
 
-from account.models import Profile, School, SchoolBranch, User
-
-from .serializers import GetUserSerializer, LoginSerializer, SchoolSerializer, UserSerializer
+from rest_framework.authtoken.serializers import AuthTokenSerializer
+from .serializers import GetUserSerializer, LoginSerializer, SchoolSerializer, UserSerializer,StudentSerializer
 from knox.models import AuthToken
+from knox.auth import TokenAuthentication
 from django.db.models import OuterRef, Subquery, Q
 
 
@@ -21,10 +27,13 @@ class LoginAPI(generics.GenericAPIView):
     serializer_class = LoginSerializer
 
     def post(self ,request , *args ,**kwargs):
+        
+        serializer = AuthTokenSerializer(data=request.data)
         serializer = self.get_serializer(data = request.data)
         serializer.is_valid(raise_exception=True)
         username = serializer.validated_data['email']
         user = User.objects.get(email=username)
+        login(request,user)
 
         return Response({
             'user' : GetUserSerializer(user).data,
@@ -32,14 +41,27 @@ class LoginAPI(generics.GenericAPIView):
         })
 
 class MeView(APIView):
-    permission_classes = [IsAuthenticated]
-
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    
     def get(self, request):
         serializer = GetUserSerializer(request.user)        
         return Response({
             'user' : serializer.data,            
         })
 
+class ClassInfo(generics.GenericAPIView):
+    class_choice = '1 Anugerah'
+    
+    def getClassInfo(request):
+        class_info = Student.objects.all()
+        serializer = StudentSerializer(class_info, many=True)
+        return JsonResponse(serializer.data, safe=False)
+    # outputt = class_choice + " "
+    # for obj in class_info:
+    #     outputt += obj.student_name + " "
+    
+    # return HttpResponse(class_info)
 
 
 @api_view(['GET'])
@@ -55,3 +77,10 @@ def post_create_staff_user(request):
        serializer.save()     
        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
+def test_func(request):
+  mymembers = User.objects.all().values()
+  output = " "
+  for x in mymembers:
+    output += x["first_name"] + " "
+  return HttpResponse(output)
