@@ -85,12 +85,12 @@ class StudentSerializer(serializers.ModelSerializer):
 class ClassesSerializer(serializers.ModelSerializer):
     count_of_students = serializers.IntegerField()
     class_name = serializers.CharField(max_length=100)
-    # students_in_classes = StudentSerializer(many=True)
+    student_in_classes = StudentSerializer(many=True)
     
 
     class Meta:
         model = Classes
-        fields = ['class_name','count_of_students']
+        fields = ['class_name','count_of_students','student_in_classes']
     
 
 
