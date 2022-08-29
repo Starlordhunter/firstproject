@@ -83,21 +83,14 @@ class School(models.Model):
     def __str__(self):
         return self.school_name
 
-class Classes(models.Model):
-    class_name = models.CharField(max_length=20)
-    class_rank = models.CharField(max_length=100)
 
-    school = models.ForeignKey(School,on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.class_name
 
 class Teacher(models.Model):
     teacher_name = models.CharField(max_length=20)
     teacher_tel_no = models.CharField(max_length=12)
     teacher_address = models.CharField(max_length=50)
 
-    classes = models.OneToOneField(Classes,on_delete=models.CASCADE)
+    classes = models.ManyToManyField('Classes', related_name="classes")
     user = models.OneToOneField(User,on_delete=models.CASCADE)
 
     def __str__(self):
@@ -108,12 +101,25 @@ class Student(models.Model):
     student_tel_no = models.CharField(max_length=12)
     student_address = models.CharField(max_length=50)
     
-    classes = models.ForeignKey(Classes,on_delete=models.CASCADE)
+    classes = models.ForeignKey('Classes',on_delete=models.CASCADE)
     user = models.OneToOneField(User,on_delete=models.CASCADE)
 
     def __str__(self):
         return self.student_name
 
 
+class Classes(models.Model):
+    class_name = models.CharField(max_length=20)
+    class_rank = models.CharField(max_length=100)
 
+    school = models.ForeignKey(School,on_delete=models.CASCADE)
+
+    def count_of_students(self):
+        return Student.objects.filter(classes_id=self).count()
+    
+    def student_in_classes(self):
+        return list(Student.objects.filter(classes_id=self))
+
+    def __str__(self):
+        return self.class_name
     
