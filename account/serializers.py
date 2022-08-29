@@ -1,9 +1,10 @@
+from asyncio.windows_events import NULL
 from rest_framework import serializers
 # from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 
 # from core.serializers import StaffSerializer
-from .models import School, Student, User, Profile
+from .models import Classes, School, Student, Teacher, User, Profile
 
 
 #ProfileSerializer
@@ -73,6 +74,28 @@ class SchoolSerializer(serializers.ModelSerializer):
 
 #StudentSerializer
 class StudentSerializer(serializers.ModelSerializer):
+    
+    student_name = serializers.CharField(max_length=100)
+    student_tel_no = serializers.CharField(max_length=100)
     class Meta:
         model = Student
         fields = ['id', 'student_name','student_tel_no','student_address','classes_id','user_id']
+
+#ClassesSerializer
+class ClassesSerializer(serializers.ModelSerializer):
+    count_of_students = serializers.IntegerField()
+    class_name = serializers.CharField(max_length=100)
+    # students_in_classes = StudentSerializer(many=True)
+    
+
+    class Meta:
+        model = Classes
+        fields = ['class_name','count_of_students']
+    
+
+
+#TeacherSerializer
+class TeacherSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Teacher
+        fields = '__all__'
