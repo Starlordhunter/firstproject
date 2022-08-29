@@ -16,12 +16,14 @@ from django.contrib.auth import login
 from account.models import Profile, School, User,Student,Teacher,Classes
 
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from .serializers import GetUserSerializer, LoginSerializer, SchoolSerializer, UserSerializer,StudentSerializer
+from .serializers import GetUserSerializer, LoginSerializer, SchoolSerializer, UserSerializer,StudentSerializer,ClassesSerializer,TeacherSerializer
 from knox.models import AuthToken
 from knox.auth import TokenAuthentication
 from django.db.models import OuterRef, Subquery, Q
 
 from django.shortcuts import redirect
+
+
 
 
 class LoginAPI(generics.GenericAPIView):
@@ -52,21 +54,36 @@ class MeView(APIView):
             'user' : serializer.data,            
         })
 
-# class ClassInfo(APIView):
-#     class_choice = '1 Anugerah'
+class ClassInfo(APIView):
+    class_choice = '1 Anugerah'
     
-def get_class_info(request):
-    if request.user.is_authenticated:
-        class_info = Student.objects.all()
-        serializer = StudentSerializer(class_info, many=True)
-        return JsonResponse(serializer.data, safe=False)
-    else:
-        return redirect('log-in')
+    def get(self, request):
+        if request.user.is_authenticated:
+            class_info = Student.objects.all()
+            serializer = StudentSerializer(class_info, many=True)
+            return JsonResponse(serializer.data, safe=False)
+        else:
+            return redirect('log-in')
     # outputt = class_choice + " "
     # for obj in class_info:
     #     outputt += obj.student_name + " "
     
     # return HttpResponse(class_info)
+
+class StudentsList(APIView):
+    class_choice = '1 Anugerah'
+    
+
+    def get(self, request):
+        teacher = Teacher.objects.filter(user=self.request.user)
+        if teacher:
+            class_info = Classes.objects.filter(classes__in=teacher)   
+            # print(class_info)
+            serializer = ClassesSerializer(class_info, many=True)
+            # print(serializer)
+            return JsonResponse(serializer.data, safe=False)
+        else:
+            return redirect('log-in')
 
 
 @api_view(['GET'])
