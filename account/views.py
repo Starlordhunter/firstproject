@@ -54,21 +54,15 @@ class MeView(APIView):
             'user' : serializer.data,            
         })
 
-class ClassInfo(APIView):
-    class_choice = '1 Anugerah'
+class ClassList(APIView):
     
     def get(self, request):
-        if request.user.is_authenticated:
+        if request.user.is_superuser:
             class_info = Student.objects.all()
             serializer = StudentSerializer(class_info, many=True)
             return JsonResponse(serializer.data, safe=False)
         else:
             return redirect('log-in')
-    # outputt = class_choice + " "
-    # for obj in class_info:
-    #     outputt += obj.student_name + " "
-    
-    # return HttpResponse(class_info)
 
 class StudentsList(APIView):
     class_choice = '1 Anugerah'
@@ -100,9 +94,3 @@ def post_create_staff_user(request):
        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-def test_func(request):
-  mymembers = User.objects.all().values()
-  output = " "
-  for x in mymembers:
-    output += x["first_name"] + " "
-  return HttpResponse(output)
