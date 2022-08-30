@@ -70,7 +70,7 @@ class LoginSerializer(serializers.Serializer):
 class SchoolSerializer(serializers.ModelSerializer):
     class Meta:
         model = School
-        fields = ['school_name', 'school_branch','id']
+        fields = '__all__'
 
 #StudentSerializer
 class StudentSerializer(serializers.ModelSerializer):
