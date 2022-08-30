@@ -23,6 +23,8 @@ from django.db.models import OuterRef, Subquery, Q
 
 from django.shortcuts import redirect
 
+from account import serializers
+
 
 
 
@@ -54,12 +56,22 @@ class MeView(APIView):
             'user' : serializer.data,            
         })
 
+class SchoolList(APIView):
+
+    def get(self,request):
+        if request.user.is_superuser:
+            school_info = School.objects.all()
+            serializer = SchoolSerializer(school_info, many=True)
+            return JsonResponse(serializer.data,safe=False)
+        else:
+            return redirect('log-in')
+
 class ClassList(APIView):
     
     def get(self, request):
         if request.user.is_superuser:
-            class_info = Student.objects.all()
-            serializer = StudentSerializer(class_info, many=True)
+            class_info = Classes.objects.all()
+            serializer = ClassesSerializer(class_info, many=True)
             return JsonResponse(serializer.data, safe=False)
         else:
             return redirect('log-in')
@@ -79,6 +91,15 @@ class StudentsList(APIView):
         else:
             return redirect('log-in')
 
+class TeacherList(APIView):
+
+    def get(self,request):
+        if request.user.is_superuser:
+            teacher_info = Teacher.objects.all()
+            serializer = TeacherSerializer(teacher_info,many=True)
+            return JsonResponse(serializer.data,safe=False)
+        else:
+            return redirect('log-in')
 
 @api_view(['GET'])
 def get_all_user_list(request):
