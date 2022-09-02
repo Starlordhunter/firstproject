@@ -13,10 +13,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from django.http import HttpResponse
 from django.contrib.auth import login
-from account.models import Profile, School, User,Student,Teacher,Classes
+from account.models import Profile, School, User,Student,Teacher,Classes,Subject
 
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from .serializers import GetUserSerializer, LoginSerializer, SchoolSerializer, UserSerializer,StudentSerializer,ClassesSerializer,TeacherSerializer
+from .serializers import GetUserSerializer, LoginSerializer, SchoolSerializer
+from .serializers import UserSerializer,StudentSerializer,ClassesSerializer,TeacherSerializer,SubjectSerializer
+from .serializers import PrincipalSerializer,PrincipalListSerializer
 from knox.models import AuthToken
 from knox.auth import TokenAuthentication
 from django.db.models import OuterRef, Subquery, Q
@@ -77,17 +79,21 @@ class ClassList(APIView):
             return redirect('log-in')
 
 class StudentsList(APIView):
-    class_choice = '1 Anugerah'
     
 
     def get(self, request):
+        # print(self.request.user)
         teacher = Teacher.objects.filter(user=self.request.user)
+        # print(teacher)
         if teacher:
-            class_info = Classes.objects.filter(classes__in=teacher)   
-            # print(class_info)
-            serializer = ClassesSerializer(class_info, many=True)
+            class_info = Classes.objects.filter(teacher_class__in=teacher)   
+            # print()
+            class_serializer = ClassesSerializer(class_info, many=True)
             # print(serializer)
-            return JsonResponse(serializer.data, safe=False)
+            subject_info = Subject.objects.filter(subject_teacher__in=teacher)
+            # print(subject_info)
+            subject_serializer = SubjectSerializer(subject_info, many=True)
+            return JsonResponse(class_serializer.data + subject_serializer.data, safe=False)
         else:
             return redirect('log-in')
 
@@ -98,6 +104,19 @@ class TeacherList(APIView):
             teacher_info = Teacher.objects.all()
             serializer = TeacherSerializer(teacher_info,many=True)
             return JsonResponse(serializer.data,safe=False)
+        else:
+            return redirect('log-in')
+
+class PrincipalList(APIView):
+    def get(self,request):
+        principal = User.objects.select_related('profile_user').filter(profile_user__role='principal',email = self.request.user)
+        if principal:
+            teacher = Teacher.objects.all()
+            class_info = Classes.objects.filter(teacher_class__in=teacher)   
+            # print()
+            class_serializer = PrincipalListSerializer(class_info, many=True)
+            # print(serializer)
+            return JsonResponse(class_serializer.data , safe=False)
         else:
             return redirect('log-in')
 
