@@ -93,7 +93,7 @@ class StudentsList(APIView):
             subject_info = Subject.objects.filter(subject_teacher__in=teacher)
             # print(subject_info)
             subject_serializer = SubjectSerializer(subject_info, many=True)
-            return JsonResponse(class_serializer.data + subject_serializer.data, safe=False)
+            return JsonResponse(subject_serializer.data + class_serializer.data, safe=False)
         else:
             return redirect('log-in')
 
@@ -112,7 +112,7 @@ class PrincipalList(APIView):
         principal = User.objects.select_related('profile_user').filter(profile_user__role='principal',email = self.request.user)
         if principal:
             teacher = Teacher.objects.all()
-            class_info = Classes.objects.filter(teacher_class__in=teacher)   
+            class_info = Classes.objects.filter(teacher_class__in=teacher).order_by('class_name').distinct() 
             # print()
             class_serializer = PrincipalListSerializer(class_info, many=True)
             # print(serializer)
@@ -122,7 +122,7 @@ class PrincipalList(APIView):
 
 @api_view(['GET'])
 def get_all_user_list(request):
-    users = User.objects.all()
+    users = User.objects.order_by('id').all()
     serializer = UserSerializer(users, many=True)
     return JsonResponse(serializer.data, safe=False)
 
