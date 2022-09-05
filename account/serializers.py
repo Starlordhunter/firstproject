@@ -31,14 +31,8 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 #userInfoSerializer
 class GetUserSerializer(serializers.ModelSerializer):
-    profile = serializers.SerializerMethodField()
     
-    def get_profile(self ,obj):
-        try :
-            profile = obj
-            return ProfileSerializer(profile).data
-        except :
-            return None
+    profile = ProfileSerializer(source='profile_user')
 
     class Meta:
         model = User 
