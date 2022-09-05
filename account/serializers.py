@@ -11,8 +11,6 @@ from .models import Classes, School, Student, Subject, Teacher, User, Profile
 #ProfileSerializer
 class ProfileSerializer(serializers.ModelSerializer):
     image_path = serializers.SerializerMethodField()
-    school_info = serializers.SerializerMethodField()
-    school_branch_info = serializers.SerializerMethodField()    
     class Meta:
         model = Profile
         fields = ['user', 'dob', 'role', 'image' ,'gender' ,'image_path' ,'id']
@@ -23,7 +21,10 @@ class ProfileSerializer(serializers.ModelSerializer):
         }
     
     def get_image_path(self ,obj):
-        return obj.image.url
+        if obj.image and hasattr(obj.image,'url'):
+            return obj.image.url
+        else:
+            return None
 
     
         
@@ -48,15 +49,8 @@ class GetUserSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer): 
     
-    profile = serializers.SerializerMethodField()
+    profile = ProfileSerializer(source='profile_user')
     
-    def get_profile(self ,obj):
-        try :
-            profile = Profile.objects.get(profile_user__in=obj)
-            print(profile)
-            return ProfileSerializer(profile).data
-        except :
-            return None
     class Meta:
         model = User
         fields = ['id', 'email', 'first_name', 'last_name', 
