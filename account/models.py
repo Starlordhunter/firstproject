@@ -1,3 +1,4 @@
+from tkinter import CASCADE
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser,PermissionsMixin,BaseUserManager
 import datetime
@@ -64,7 +65,7 @@ class User(AbstractBaseUser,PermissionsMixin):
 class Profile(models.Model):
     image = models.ImageField(upload_to="profile" ,blank = True)
     gender = models.CharField(max_length = 112)
-    user = models.OneToOneField(User , on_delete=models.CASCADE)
+    user = models.OneToOneField(User , on_delete=models.CASCADE,related_name='profile_user')
     dob = models.CharField(max_length=10)
     age = models.CharField(max_length=20)
     role = models.CharField(max_length=50)        
@@ -83,22 +84,16 @@ class School(models.Model):
     def __str__(self):
         return self.school_name
 
-class Classes(models.Model):
-    class_name = models.CharField(max_length=20)
-    class_rank = models.CharField(max_length=100)
 
-    school = models.ForeignKey(School,on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.class_name
 
 class Teacher(models.Model):
     teacher_name = models.CharField(max_length=20)
     teacher_tel_no = models.CharField(max_length=12)
     teacher_address = models.CharField(max_length=50)
 
-    classes = models.OneToOneField(Classes,on_delete=models.CASCADE)
+    classes = models.ManyToManyField('Classes', related_name='teacher_class')
     user = models.OneToOneField(User,on_delete=models.CASCADE)
+    subject = models.OneToOneField('Subject',on_delete=models.CASCADE,default='',related_name='subject_teacher')
 
     def __str__(self):
         return self.teacher_name
@@ -108,12 +103,38 @@ class Student(models.Model):
     student_tel_no = models.CharField(max_length=12)
     student_address = models.CharField(max_length=50)
     
-    classes = models.ForeignKey(Classes,on_delete=models.CASCADE)
+    classes = models.ForeignKey('Classes',on_delete=models.CASCADE,related_name='student_class')
     user = models.OneToOneField(User,on_delete=models.CASCADE)
+    subject = models.ManyToManyField('Subject',related_name='subject_student')
+
+    def subject_taken(self):
+        return list(Subject.objects.filter(subject_student=self))
 
     def __str__(self):
         return self.student_name
 
 
+class Classes(models.Model):
+    class_name = models.CharField(max_length=20)
+    class_rank = models.CharField(max_length=100)
 
+    school = models.ForeignKey(School,on_delete=models.CASCADE)
+
+    def count_of_students(self):
+        return Student.objects.filter(classes_id=self).count()
     
+    def student_in_classes(self):
+        return list(Student.objects.filter(classes_id=self))
+
+    def teacher_info(self):
+        return list(Teacher.objects.filter(classes=self))
+
+    def __str__(self):
+        return self.class_name
+
+class Subject(models.Model):
+    subject_name = models.CharField(max_length=20)
+
+
+    def __str__(self):
+        return self.subject_name
