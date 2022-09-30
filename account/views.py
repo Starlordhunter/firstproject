@@ -17,6 +17,8 @@ from rest_framework.pagination import PageNumberPagination
 from django.http import HttpResponse
 from django.contrib.auth import login
 from account.models import Profile, School, User,Student,Teacher,Classes,Subject
+# from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer
+
 
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from .serializers import GetUserSerializer, LoginSerializer, ProfileSerializer, SchoolSerializer
@@ -44,7 +46,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['firstname'] = user.first_name
         token['role'] = role.data[0]['profile']['role']
         # ...
-
+        
         return token
 
 
@@ -107,7 +109,7 @@ class MeView(APIView):
         })
 
 class SchoolList(APIView):
-
+    permission_classes = [IsAuthenticated]
     def get(self,request):
         if request.user.is_superuser:
             school_info = School.objects.all()
@@ -127,7 +129,10 @@ class ClassList(APIView):
             return redirect('log-in')
 
 class StudentsList(APIView):
-    
+    permission_classes = [IsAuthenticated]
+
+    # data = {'token': token}
+    # valid_data = VerifyJSONWebTokenSerializer().validate(data)
 
     def get(self, request):
         # print(self.request.user)
@@ -159,6 +164,7 @@ class TeacherList(APIView):
             return redirect('log-in')
 
 class PrincipalList(APIView):
+    permission_classes=[IsAuthenticated]
     def get(self,request):
         principal = User.objects.select_related('profile_user').filter(profile_user__role='principal',email = self.request.user)
         if principal or request.user.is_superuser:
